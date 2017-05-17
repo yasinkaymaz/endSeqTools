@@ -7,11 +7,6 @@ import textwrap
 import argparse
 import glob
 
-#os.chdir("/home/kaymazy/test/")
-#os.mkdir('%s' %fastq[:-6])
-#os.chdir('/home/kaymazy/test/%s' %fastq[:-6])
-#outDir=os.getcwd()
-
 argparser = argparse.ArgumentParser(description='Process some integers.')
 
 subcommands={}
