@@ -7,38 +7,52 @@ library(pheatmap)
 library(Biobase)
 library(reshape2)
 
+#Input files
 args = commandArgs (T)
+#A bed file which also contains PAS expression values for every sample as a table
 InputBedFile = args[1]
+#Output file name
 Outfile = args[2]
+#Number of samples in the first group
 NoC1=as.numeric(args[3])
+#Number of samples in the second group
 NoC2=as.numeric(args[4])
+#output directory
 OutDIR = args[5]
-NoS=NoC1+NoC2
 
+
+NoS=NoC1+NoC2
 data <- read.delim(InputBedFile,header=FALSE)
 head(data)
 data <- data[rowSums(data[,8:(7+NoS)]) > 10,  ]
-#Filter low count PA sites!
 
 genes <- data[,NoS+8]
+#Count the number of PAS for each gene
 gene.table <- as.data.frame(table(genes))
+#Filter genes with low PAS counts!
 genelist <- noquote(droplevels(gene.table[which(gene.table$Freq >1),]))
 rownames(genelist) <- genelist$genes
 print("Starting to Switch Testing!")
-#Switch Test
+#APA Switch Test
 tested.Genes <- NULL  
 for (i in genelist$genes){ 
+  #nPA = number of PolyA sites (PAS)
   nPA=genelist[i,]$Freq
+  #Get the total gene read total count for each group
   GeneTotalC1 <- sum(data[which(data[,NoS+8] == i  ),8:(7+NoC1)])
   GeneTotalC2 <- sum(data[which(data[,NoS+8] == i  ),(8+NoC1):(7+NoS)])
+  #Get the total read count of each PAS for every gene
   PAsC1 <- rowSums(data[which(data[,NoS+8] == i  ),8:(7+NoC1)])
   PAsC2 <- rowSums(data[which(data[,NoS+8] == i  ),(8+NoC1):(7+NoS)])
-  
+  #For every PAS
   for (j in 1:nPA){
+    #Create a 2 by 2 table which is composed of read count of a PAS and the sum of the rest of the counts in the same gene for two conditions (groups)
     x <- round(matrix(c(PAsC1[j]/NoC1, PAsC2[j]/NoC2, (GeneTotalC1-PAsC1[j])/NoC1, (GeneTotalC2-PAsC2[j])/NoC2), byrow = TRUE, 2, 2))
     print(i)
     print(x)
+    #Conduct a Chi-Square test on this 2x2 table
     cqtest <- chisq.test(x)
+    #Create a table with test and summary statistics including every tested PAS
     tested.PAsites <- as.data.frame(data[which(data[,NoS+8] == i  ),c(1,2,3,4,5,6,(8+NoS),(9+NoS),(10+NoS))][j,])
     tested.PAsites$Num_Total_PA_sites_of_Gene <- nPA
     tested.PAsites$PA_MeanCond1 <- PAsC1[j]/NoC1
@@ -47,63 +61,77 @@ for (i in genelist$genes){
     tested.PAsites$Chi2.statistics  <- cqtest$statistic
     tested.PAsites$Chi2.pvalue <- cqtest$p.val
     tested.PAsites$Fis.pvalue <- fisher.test(x)$p.value
-    
     tested.Genes <- rbind(tested.Genes, tested.PAsites)
     
   }
   
 }
 
-
+#Adjust the p-value for multiple hypothesis testing using Benjamini-Hochberg method
 tested.Genes$Chi.padj <- p.adjust(tested.Genes$Chi2.pvalue, n=length(tested.Genes[,1]), method="BH")
 tested.Genes$Fis.padj <- p.adjust(tested.Genes$Fis.pvalue, n=length(tested.Genes[,1]), method="BH")
+#Dump the table as an output file
 write.table(tested.Genes[order(tested.Genes$Chi.padj),], file=Outfile,sep="\t")
 print("Switch Testing is complete!")
 print("Starting to UTR Length comparison!")
-#3'UTR length
-data <- read.delim(paste(OutDIR,"/","3utr_CPM.bed",sep=""),header=FALSE)
 
+
+#Conduct a 3'UTR lengthening/shorthening test
+#Read the 3' UTR normalized counts from the previous analysis step in the pipeline
+data <- read.delim(paste(OutDIR,"/","3utr_CPM.bed",sep=""),header=FALSE)
 rownames(data) <- data$V10
+#Extract the columns with the expression values
 data <- data[rowSums(data[,14:(13+NoS)]) > 100,  ]
 head(data,2)
 genes <- data[,5]
+#Get the genes and their corresponding PAS counts
 gene.table <- as.data.frame(table(genes))
 genelist <- noquote(droplevels(gene.table[which(gene.table$Freq > 1),]))
 rownames(genelist) <- genelist$genes
 
-
-
-
+#Empty the previous table.
 tested.Genes <- NULL
+#for every gene in the table
 for (i in genelist$genes){
+  #nPA = number of PolyA sites (PAS)
   nPA=genelist[i,]$Freq
   print(data[which(data[,5] == i  ),5]);
+  #get the unique 3'UTR ids
   utrs <- droplevels(unique(data[which(data[,5] == i  ),5]))
+  #For every 3'UTR of a given gene
   for (u in utrs){
+    #look at the expression count distribution among the samples
     u.data <- data[which(data[,5] == u  ),]
+    #if the gene is being transcribed from minus strand, swap the order of PAS to determine shorthening or lengthening properly. Do not, otherwise.
     if(u.data$V6[1] == "-"){
+      #Calcluate the weigthed distance of PAS to the end of last coding exon
       u.data$PAS.dist <- u.data$V3 - (u.data$V8 +(u.data$V9-u.data$V8)/2)
       u.data <- u.data[order(rowMeans(data[which(data[,5] == u  ),14:(13+NoS)]),decreasing = TRUE),]
       u.data <- u.data[1:2,]
       u.data <- u.data[order(u.data$PAS.dist),]
       u.data$Site <- c("Proximal","Distal")
     }else{
+      #Calcluate the weigthed distance of PAS to the end of last coding exon
       u.data$PAS.dist <- (u.data$V8 +(u.data$V9-u.data$V8)/2)-u.data$V2
       u.data <- u.data[order(rowMeans(data[which(data[,5] == u  ),14:(13+NoS)]),decreasing = TRUE),]
       u.data <- u.data[1:2,]
       u.data <- u.data[order(u.data$PAS.dist),]
       u.data$Site <- c("Proximal","Distal")
     }
+    #Calculate the average statistics of PAS of 3UTRs in each condition
     u.data$C1mean <- rowMeans(u.data[which(u.data[,5] == u  ),14:(13+NoC1)])
     u.data$C2mean <- rowMeans(u.data[which(u.data[,5] == u  ),(14+NoC1):(13+NoS)])
     u.data$C1utrlen <- (u.data$C1mean+0.0001)*u.data$PAS.dist
     u.data$C2utrlen <- u.data$C2mean*u.data$PAS.dist
+    #Check the correlation between the expression distribution of 3'UTRs in each condition
     utr.len.cor <- cor(u.data$C1utrlen,u.data$C2utrlen)
+    #Create a datafrome to use to plot the expression distrubition for comparison
     plot.data <- rbind(round(t(u.data[,14:(13+NoC1)])), round(t(u.data[,(14+NoC1):(13+NoS)])))
-    plot.data<- data.frame(c(rep("Normal",NoC1),rep("PE",NoC2)) ,plot.data)
+    plot.data <- data.frame(c(rep("Normal",NoC1),rep("PE",NoC2)), plot.data)
     colnames(plot.data) <- c("Type","Proximal","Distal")
     plot.data$P2D_ratio <- plot.data$Proximal/plot.data$Distal
     plot.data <- plot.data[is.finite(plot.data$P2D_ratio),]
+    #Calculate the ratios of median expression of Proximal and Distal PAS in the 3UTR
     u.data$P2D_Ratio_N <- median(plot.data[plot.data$Type == "Normal",]$P2D_ratio)
     u.data$P2D_Ratio_PE <- median(plot.data[plot.data$Type == "PE",]$P2D_ratio)
     tested.Genes <- rbind(tested.Genes,u.data)
@@ -117,6 +145,7 @@ write.table(tested.Genes,file=paste(OutDIR,"/","UTRlen.txt",sep=""),sep="\t")
 
 nms <- as.data.frame(table(droplevels(tested.Genes[,5])))
 
+#For every significant UTR PAS events resulting in significant shorthening/lenghtening, Plot the expression distribution
 pdf(paste(OutDIR,"/","UTR_Length_Shorthening.pdf",sep=""))
 for (i in nms$Var1 ){
   nPA=genelist[i,]$Freq
