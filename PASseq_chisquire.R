@@ -33,6 +33,7 @@ gene.table <- as.data.frame(table(genes))
 genelist <- noquote(droplevels(gene.table[which(gene.table$Freq >1),]))
 rownames(genelist) <- genelist$genes
 print("Starting to Switch Testing!")
+#Test-1
 #APA Switch Test
 tested.Genes <- NULL  
 for (i in genelist$genes){ 
@@ -75,7 +76,7 @@ write.table(tested.Genes[order(tested.Genes$Chi.padj),], file=Outfile,sep="\t")
 print("Switch Testing is complete!")
 print("Starting to UTR Length comparison!")
 
-
+#Test-2
 #Conduct a 3'UTR lengthening/shorthening test
 #Read the 3' UTR normalized counts from the previous analysis step in the pipeline
 data <- read.delim(paste(OutDIR,"/","3utr_CPM.bed",sep=""),header=FALSE)
