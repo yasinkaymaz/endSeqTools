@@ -1,9 +1,11 @@
 # endSeqTools
 A pipeline for end sequencing data sets. 
 
-USAGE: endSeqTools.py [-h] subcommand [suboptions] 
+USAGE: 
+endSeqTools.py [-h] subcommand [suboptions] 
 -----
-DESCRIPTION: A collection of tools to analyze end sequencing data such as PASseq, 3Pseq etc.
+DESCRIPTION: 
+A collection of tools to analyze end sequencing data such as PASseq, 3Pseq etc.
 -----------
 SUBCOMMANDS:
 -----------
