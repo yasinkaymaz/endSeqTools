@@ -6,6 +6,9 @@ import os, time, subprocess
 import textwrap
 import argparse
 import glob
+install_dir = os.path.dirname(__file__)
+print os.getcwd()
+print install_dir
 
 #os.chdir("/home/kaymazy/test/")
 #os.mkdir('%s' %fastq[:-6])
@@ -44,7 +47,7 @@ def main(args):
         print "unknown subcommand (" + args[0] + ") use -h for list of subcommands!"
         sys.exit(-1)
     sys.exit(0)
-    
+
     return
 
 def exportTools():
@@ -56,14 +59,14 @@ def exportTools():
     #Samtools
     #BedTools
     #Rscript
-    
+
     return
 
 def run_command(params,shell=True):
     cmd=' '.join(params)
     proc = subprocess.Popen(cmd,stdin=None,stdout=subprocess.PIPE, stderr=subprocess.PIPE,shell=shell)
     (odata,edata) = proc.communicate()
-    
+
     if len(edata)>0:
         edata=0
     return [edata,odata]
@@ -74,7 +77,7 @@ subcommands['trimPolyAstrecth'] = { 'shortDesc':shortDescText, 'longDesc': longD
 
 def trimPolyAstrecth(args):
     """
-    
+
     #Input: Fastq file, required
     #Arguments: NA
     """
@@ -103,7 +106,7 @@ subcommands['trimPolyTstrecth'] = { 'shortDesc':shortDescText, 'longDesc': longD
 
 def trimPolyTstrecth(args):
     """
-    
+
     #Input: Fastq file, required
     #Arguments: NA
     """
@@ -135,7 +138,7 @@ def genomeAlign(args):
     This function maps reads in Fastq format to a target genome using Bowtie2
     #Input: Fastq file
     #Arguments: -
-    #User option: bowtie2, bwa 
+    #User option: bowtie2, bwa
     #Output(s): samfile, unmapped reads file
     """
     #TODO: 1. needs bowtie2 exported to environment --> export PATH=/home/baileyj1/share/bin_sync/bowtie2-2.1.0/
@@ -144,14 +147,14 @@ def genomeAlign(args):
     #    4. Include option for other genomes such as mouse. DONE
     #    5. Provide statistics and plots
     #    6. Fix the output directory of unmapped.fastz.gz
-    
+
     argparser.add_argument("-f", "--fastq", required=True, help='Raw read sequences in fastq format for mapping to genome. Please provide with full directory.')
     argparser.add_argument("--mouse", action='store_true', required=False, help='Choose target organism genome as mouse to map read sequences (mm10). Please add this argument if your organism is mouse (Default is human).')
     argparser.add_argument("-m","--multimappers",  action='store', type=int, required=False, dest="MM", help='Choose the limit of reported multimappers, integer (Default is 1).')
     argparser.add_argument("-p","--multithread",  action='store', type=int, required=False, dest="MT", help='Choose the number of processors, integer (Default is 2).')
 
     args=argparser.parse_args(args=args)
-    
+
     fastq = glob.glob(args.fastq)[0]
     print "Input read file is: ", fastq
     outDir=os.path.dirname(fastq)
@@ -175,10 +178,10 @@ def genomeAlign(args):
 
     print '%(dir)s/unmapped.fastq.gz' %{"dir":outDir}
     params = ['bowtie2','-p','%s' %mt, '-x', '%s' %genome,'-k','%s' %mm, '--un-gz', '%(dir)s/unmapped.fastq.gz' %{"dir":outDir}, '-U', '%(fq1)s' %{"fq1":fastq}, '-S', '%s' %samFile]
-    
+
     run_command(params,shell=True)
     print "Output genome alignment file is: ", samFile
-    
+
     return
 
 shortDescText="Post-alignment processing of sam files."
@@ -204,7 +207,7 @@ def samProcess(args):
     basename=samFile.strip().split("/")[-1][:-4]
     bamFile = outDir+"/"+basename+'.bam'
     sortedBamFile = outDir+"/"+basename+'_sorted.bam'
-   
+
     if args.Thr_MQ:
         Thr_MQ=args.Thr_MQ
     else:
@@ -228,18 +231,18 @@ def samProcess(args):
 
 def excludeChr():
     """
-    #Input: 
-    #Arguments: 
-    #User options: 
-    #Output(s): 
+    #Input:
+    #Arguments:
+    #User options:
+    #Output(s):
     """
     return
 
 def genomCov2bed(GenCov, strand, Bed):
     """
     #Input: Output file of genomeCoverage from BedTools
-    #Arguments: 
-    #User options: 
+    #Arguments:
+    #User options:
     #Output(s): Bedformat
     """
     fileGenCov = open('%s' %GenCov, "r")
@@ -261,7 +264,7 @@ def genomCov2bed(GenCov, strand, Bed):
     fileGenCov.close()
     fileBed.close()
 
-    
+
     return
 
 shortDescText="Calculates coverage levels of peaks in a strand specific manner."
@@ -270,14 +273,14 @@ subcommands['genomeCov'] = { 'shortDesc':shortDescText, 'longDesc': longDescText
 
 def genomeCov(args):
     """
-    #Input: 
-    #Arguments: 
+    #Input:
+    #Arguments:
     #User options: mouse or human (default human). User optionally can provide bam file with bam argument.
     #Output(s):
     """
-    #TODO: 1. 
+    #TODO: 1.
     #      2. Provide statistics and plots
-    #      3. 
+    #      3.
     #      4. it does not work if you dont provide bam file. Fix!
     #	   5. Give an option to switch strand for RNaseH protocol or 3Pseq etc.
     #Calculate Coverage for + strand
@@ -313,7 +316,7 @@ def genomeCov(args):
     strand = 'plus'
     print "Bed file is being created..."
     genomCov2bed(plusStrGenCov, strand, plusStrBed)
-    
+
     #Calculate Coverage for - strand
     print "Scanning for minus strand..."
     params = ['genomeCoverageBed', '-ibam', '%s' %sortedBamFile, '-g',\
@@ -324,7 +327,7 @@ def genomeCov(args):
     strand = 'minus'
     print "Bed file is being created..."
     genomCov2bed(minStrGenCov, strand, minStrBed)
-    
+
     #merge POS strand NEG strand files
     params = ['cat', '%s' %plusStrBed,\
                '%s' %minStrBed, '>', \
@@ -335,7 +338,7 @@ def genomeCov(args):
     run_command(params,shell=True)
 
     os.remove(mergedBed)
-    
+
     params = ['mv', '%s' %mergedBedtmp, '%s' %mergedBed]
     run_command(params,shell=True)
 
@@ -344,7 +347,7 @@ def genomeCov(args):
     os.remove(minStrGenCov)
     os.remove(plusStrBed)
     os.remove(minStrBed)
-    
+
     return
 
 shortDescText="Detecting internally priming events with NB classifier."
@@ -353,12 +356,12 @@ subcommands['NBclassifier'] = { 'shortDesc':shortDescText, 'longDesc': longDescT
 
 def NBclassifier(args):
     """
-    #Run Naive Bayes classification in order to compute probability of a given PAS peak being an internal priming event. 
+    #Run Naive Bayes classification in order to compute probability of a given PAS peak being an internal priming event.
     This step runs an external R script in ./src/ called "cleanUpdTSeq.R".
     This step takes too long. Time consuming!
-    #Input: 
-    #Arguments: 
-    #User options: 
+    #Input:
+    #Arguments:
+    #User options:
     #Output(s):
     """
     #TODO: 1. Provide statistics and plots
@@ -368,7 +371,7 @@ def NBclassifier(args):
     argparser.add_argument("-bd", "--bed", required=True, help='A file stores candidate locations in bed format is required. Please provide with full directory.')
     argparser.add_argument("--mouse", action='store_true', required=False, help='Choose target organism genome as mouse to map read sequences (mm10). Please add this argument if your organism is mouse (Default is human).')
     args=argparser.parse_args(args=args)
-    
+
     mergedBed = glob.glob(args.bed)[0]
     outDir=os.path.dirname(mergedBed)
     basename=mergedBed.strip().split("/")[-1][:-4]
@@ -382,11 +385,11 @@ def NBclassifier(args):
         organism='mouse'
     else:
         organism='human'
-    
+
     print "Calculating the internal priming event probabilities... Please be patient! This step is time consuming!"
     params = ['Rscript', '--vanilla', '%s' %cleanUpdTSeq_R, '%s' %mergedBed, '%s' %NB_output, organism]
     run_command(params,shell=True)
-    
+
     return
 
 
@@ -398,9 +401,9 @@ def clusterPeaks(args):
     """
     Cluster reads & calculate peak stats & combine with NB probs.
     This step runs an external bash script in ./src/ called "cluster.sh".
-    #Input: 
-    #Arguments: 
-    #User options: 
+    #Input:
+    #Arguments:
+    #User options:
     #Output(s):
     """
     #TODO: 1.Provide statistics and plots
@@ -427,7 +430,7 @@ def clusterPeaks(args):
     print NB_output
     params = ['%s' %cluster_sh, '%s'%cd, '%s' %mergedBed, '%s' %NB_output]
     run_command(params,shell=True)
-    
+
     return
 
 def calculateLibsize(bedfile2librarysize):
@@ -443,12 +446,12 @@ subcommands['makeBedgraph'] = { 'shortDesc':shortDescText, 'longDesc': longDescT
 
 def makeBedgraph(args):
     """
-    #Input: 
-    #Arguments: 
-    #User options: 
+    #Input:
+    #Arguments:
+    #User options:
     #Output(s): bed
     """
-    #TODO: 
+    #TODO:
     argparser.add_argument("-bd", "--bed", required=True, help='A file stores candidate locations in bed format is required. Expression in raw read count. Please provide with full directory.')
     argparser.add_argument("--mouse", action='store_true', required=False, help='Choose target organism genome as mouse to map read sequences (mm10). Please add this argument if your organism is mouse (Default is human).')
     args=argparser.parse_args(args=args)
@@ -490,9 +493,9 @@ subcommands['makeSamplesTable'] = { 'shortDesc':shortDescText, 'longDesc': longD
 def makeSamplesTable(args):
     """
     This step runs an external bash script in ./src/ called "make_samples_matrix.sh".
-    #Input: 
-    #Arguments: 
-    #User options: 
+    #Input:
+    #Arguments:
+    #User options:
     #Output(s):
     """
     #TODO: 1. Provide statistics and plots
@@ -505,7 +508,7 @@ def makeSamplesTable(args):
 
     params = ['%s' %makeSamplesTable_sh, '%s' %SamplesFile, '%s' %GTFFile]
     run_command(params,shell=True)
-    
+
     return
 
 
@@ -516,9 +519,9 @@ subcommands['switchTest'] = { 'shortDesc':shortDescText, 'longDesc': longDescTex
 def switchTest(args):
     """
     This step runs an external bash script in ./utils/ called "PASseq_chisquire_beta_v3.R".
-    #Input: 
-    #Arguments: 
-    #User options: 
+    #Input:
+    #Arguments:
+    #User options:
     #Output(s):
     """
     #TODO: 1. Provide statistics and plots
@@ -531,7 +534,7 @@ def switchTest(args):
 
     params = ['%s' %SwitchTest_R_script, '%s' %SamplesFile, '%s' %GTFFile]
     run_command(params,shell=True)
-    
+
     return
 
 
@@ -547,9 +550,9 @@ subcommands['annotatePeaks'] = { 'shortDesc':shortDescText, 'longDesc': longDesc
 def annotatePeaks(args):
     """
     This step runs an external bash script in ./src/ called "annotate.sh".
-    #Input: 
-    #Arguments: 
-    #User options: 
+    #Input:
+    #Arguments:
+    #User options:
     #Output(s):
     """
     #TODO: 1. Provide statistics and plots
@@ -561,9 +564,9 @@ def annotatePeaks(args):
 
     truePeaksBed = glob.glob(args.bed)[0]
     outDir=os.path.dirname(truePeaksBed)
-    
+
     basename=truePeaksBed.strip().split("/")[-1][:-4]
-    
+
     if args.downDist:
         downDist=args.downDist
     else:
@@ -573,10 +576,10 @@ def annotatePeaks(args):
         organism='mouse'
     else:
         organism='human'
-    
+
     params = ['%s' %annotate_sh, '%s' %truePeaksBed, '%s' %organism, '%s' %downDist]
-    run_command(params,shell=True) 
-    
+    run_command(params,shell=True)
+
     return
 
 #################################
@@ -589,16 +592,16 @@ class inputfiles:
     def __init__(self,name):
         self.name=name
         inputfiles.name += 1
-    
+
 class outputfiles:
     'Common base class for output files'
     file=0
     def __init__(self,name):
         self.name=name
         outputfiles.name += 1
-        
+
 ####
-install_dir='/project/umw_jeffrey_bailey/OTHERS/endSeq_Tools'
+#install_dir='/project/umw_jeffrey_bailey/OTHERS/endSeq_Tools'
 
 cleanUpdTSeq_R = '%s/src/cleanUpdTSeq.R' %install_dir
 cluster_sh = '%s/src/cluster.sh' %install_dir
@@ -611,5 +614,5 @@ SwitchTest_R_script = '%s/utils/PASseq_chisquire_beta_v3.R' %install_dir
 
 if __name__ == "__main__":
     if len (sys.argv)==1:
-        sys.argv.append("--help")  #if no command then it is a cry for help    
+        sys.argv.append("--help")  #if no command then it is a cry for help
     main(sys.argv[1:])
