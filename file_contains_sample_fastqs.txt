@@ -1,0 +1,2 @@
+/project/umw_jeffrey_bailey/yk42w/data/PASseq/data1/dist3_lane1/AACCG/Wald_Pool_1_NoIndex_L001_R1.fastq
+/project/umw_jeffrey_bailey/yk42w/data/PASseq/data1/dist3_lane1/ACGAG/Wald_Pool_1_NoIndex_L001_R1.fastq
