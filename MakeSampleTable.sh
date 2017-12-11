@@ -17,9 +17,9 @@ module load bedtools/2.17.0
 module load python/2.7.5
 module load fastqc/0.10.1
 
-endSeqDir='/home/yk42w/codes/endSeq_Tools'
-export PATH=/home/yk42w/codes/endSeq_Tools/src:$PATH
-export PATH=/home/yk42w/codes/endSeq_Tools/utils:$PATH
+endSeqDir='/home/yk42w/codes/endSeqTools'
+export PATH=/home/yk42w/codes/endSeqTools/src:$PATH
+export PATH=/home/yk42w/codes/endSeqTools/utils:$PATH
 #TO DO:
 #----------
 # 1) PROVIDE AN APPROPRIATE FILE "/Full-directory/file_contains_sample_fastqs.txt". This file should contain each fastq file for the samples with a unique name and full directories at each line.

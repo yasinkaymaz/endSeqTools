@@ -10,7 +10,7 @@
 
 #TO DO:
 #----------
-# 1) PROVIDE AN APPROPRIATE FILE "/Full-directory/file_contains_sample_fastqs.txt". This file should contain each fastq file for the samples with a unique name and full directories at each line. 
+# 1) PROVIDE AN APPROPRIATE FILE "/Full-directory/file_contains_sample_fastqs.txt". This file should contain each fastq file for the samples with a unique name and full directories at each line.
 #       For example; file_contains_sample_fastqs.txt file should look like this;
 #       /project/umw_jeffrey_bailey/OTHERS/Ami/rerun/N0.fastq
 #       /project/umw_jeffrey_bailey/OTHERS/Ami/rerun/N4.fastq
@@ -34,9 +34,10 @@ module load R/3.0.1
 module load bedtools/2.17.0
 module load python/2.7.5
 
-endSeqDir='/project/umw_jeffrey_bailey/OTHERS/endSeq_Tools'
-export PATH=/project/umw_jeffrey_bailey/OTHERS/endSeq_Tools/src:$PATH
-export PATH=/project/umw_jeffrey_bailey/OTHERS/endSeq_Tools/utils:$PATH
+endSeqDir='/home/yk42w/codes/endSeqTools'
+export PATH=/home/yk42w/codes/endSeqTools/src:$PATH
+export PATH=/home/yk42w/codes/endSeqTools/utils:$PATH
+PATH=/project/umw_jeffrey_bailey/OTHERS/endSeq_Tools/utils:$PATH
 
 #Configure
 index_id=`echo $LSB_JOBINDEX`
@@ -70,4 +71,3 @@ module unload tophat/2.0.9
 module unload bowtie2/2-2.1.0
 module unload R/3.0.1
 module unload bedtools/2.17.0
-

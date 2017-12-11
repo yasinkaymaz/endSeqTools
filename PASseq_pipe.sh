@@ -10,7 +10,7 @@
 
 #TO DO:
 #----------
-# 1) PROVIDE AN APPROPRIATE FILE "/Full-directory/file_contains_sample_fastqs.txt". This file should contain each fastq file for the samples with a unique name and full directories at each line. 
+# 1) PROVIDE AN APPROPRIATE FILE "/Full-directory/file_contains_sample_fastqs.txt". This file should contain each fastq file for the samples with a unique name and full directories at each line.
 #	For example; file_contains_sample_fastqs.txt file should look like this;
 #	/project/umw_jeffrey_bailey/OTHERS/Ami/rerun/N0.fastq
 #	/project/umw_jeffrey_bailey/OTHERS/Ami/rerun/N4.fastq
@@ -18,7 +18,7 @@
 #	/project/umw_jeffrey_bailey/OTHERS/Ami/rerun/N7.fastq
 
 # 2) Modify the script below; give the correct "/Full-directory/" for "file_contains_sample_fastqs.txt" file.
- 
+
 # 3) PLEASE MODIFY arraytest[1-X] BASED ON THE NUMBER OF SAMPLES in "file_contains_sample_fastqs.txt" file. X is the total number of samples. This will allow to submit one job to the GHPCC and run all of the samples in PARALEL independently. The output files will be stored in the same directory of fastq files.
 
 # 4) MODIFY MEMORY (-R) AND JOB TIME (-W) ACCORDING TO YOUR DATA SIZE. If you have more than 10M reads per sample, it would be wise to increase time (-W) to 240:00 (10days) and memory (-R) to 16000 with at least 4 cores (-n). Especially, NBclassifier function consumes a lot of time!
@@ -35,9 +35,9 @@ module load bedtools/2.17.0
 module load python/2.7.5
 module load fastqc/0.10.1
 
-endSeqDir='/project/umw_jeffrey_bailey/OTHERS/endSeq_Tools'
-export PATH=/project/umw_jeffrey_bailey/OTHERS/endSeq_Tools/src:$PATH
-export PATH=/project/umw_jeffrey_bailey/OTHERS/endSeq_Tools/utils:$PATH
+endSeqDir='/home/yk42w/codes/endSeqTools'
+export PATH=/home/yk42w/codes/endSeqTools/src:$PATH
+export PATH=/home/yk42w/codes/endSeqTools/utils:$PATH
 
 #Configure
 index_id=`echo $LSB_JOBINDEX`
@@ -72,4 +72,3 @@ module unload bowtie2/2-2.1.0
 module unload R/3.0.1
 module unload bedtools/2.17.0
 module unload fastqc/0.10.1
-
